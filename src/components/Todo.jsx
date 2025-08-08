@@ -1,9 +1,38 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { ThemeContext } from "../contexts/themeContext";
+import { useDispatch, useSelector } from "react-redux";
+import { addTodo, changeStatus } from "../features/todo";
 
 const Todo = () => {
   const [title, setTitle] = useState("");
   const { light, toggleTheme } = useContext(ThemeContext);
+  const todos = useSelector((state) => state.todo);
+  const dispatch = useDispatch();
+
+  // Add Todo.
+  const handleAdd = () => {
+    if (title.trim() !== "") {
+      dispatch(addTodo(title));
+    }
+    setTitle("");
+  };
+
+  // Event Listener.
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Enter" && title.trim() !== "") {
+        dispatch(addTodo(title));
+        setTitle("");
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [title, dispatch]);
+
   return (
     <section
       className={`w-80 sm:w-sm md:w-md lg:w-lg rounded-xl ${
@@ -81,10 +110,15 @@ const Todo = () => {
           type="text"
           value={title}
           placeholder="Plan It. Do It. Complete It."
-          className="border border-neutral-500 mt-5 p-2 rounded-md outline-0 flex-1"
+          className={`border border-neutral-500 mt-5 p-2 rounded-md outline-0 ${
+            light
+              ? "focus:ring-2 focus:ring-amber-400"
+              : "focus:ring-2 focus:ring-blue-400"
+          } flex-1 text-sm md:text-md transition-all duration-200 ease-in-out`}
           onChange={(e) => setTitle(e.target.value)}
         />
         <button
+          onClick={handleAdd}
           className={`flex items-center justify-center mt-5 h-12 w-12 rounded-full p-2 cursor-pointer font-bold text-[20px] ${
             light
               ? "bg-amber-500 shadow-md text-neutral-700"
@@ -103,6 +137,114 @@ const Todo = () => {
             <path d="M4.929 4.929a10 10 0 1 1 14.141 14.141a10 10 0 0 1 -14.14 -14.14zm8.071 4.071a1 1 0 1 0 -2 0v2h-2a1 1 0 1 0 0 2h2v2a1 1 0 1 0 2 0v-2h2a1 1 0 1 0 0 -2h-2v-2z" />
           </svg>
         </button>
+      </section>
+
+      {/* List Section */}
+      <section>
+        {todos.length === 0 ? (
+          <p className="mt-5 font-bold light text-neutral-500 text-center text-sm select-none">
+            No task available!
+          </p>
+        ) : (
+          <section className="max-h-[600px] overflow-y-auto overflow-x-hidden mt-4 rounded-md">
+            <ul className="space-y-4 list-none m-0 p-0">
+              {todos.map((todo) => (
+                <li
+                  key={todo.id}
+                  className={`p-4 flex items-center gap-5 rounded-md transition-all duration-200 ease-in-out ${
+                    light
+                      ? "bg-neutral-600 text-white shadow-neutral-600 shadow-sm"
+                      : "bg-white shadow-md"
+                  }`}
+                >
+                  {/* Checkbox */}
+                  <input
+                    type="checkbox"
+                    onClick={() => dispatch(changeStatus(todo.id))}
+                    aria-label={`Mark "${todo.title}" as completed`}
+                  />
+
+                  {/* Todo Text */}
+                  <span className="flex-1">{todo.title}</span>
+
+                  {/* Actions */}
+                  <nav
+                    className="flex items-center gap-2"
+                    aria-label="Todo actions"
+                  >
+                    {/* Edit Btn */}
+                    <button
+                      className="h-8 w-8 bg-emerald-500 rounded-full flex items-center justify-center"
+                      title="Edit"
+                      aria-label="Edit todo"
+                    >
+                      {/* Edit Icon */}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+                        <path d="M13.5 6.5l4 4" />
+                      </svg>
+                    </button>
+
+                    {/* Delete Btn */}
+                    <button
+                      className="h-8 w-8 bg-red-500 rounded-full flex items-center justify-center"
+                      title="Delete"
+                      aria-label="Delete todo"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M4 7h16" />
+                        <path d="M10 11v6" />
+                        <path d="M14 11v6" />
+                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
+                        <path d="M9 7V4a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
+                      </svg>
+                    </button>
+
+                    {/* View Btn */}
+                    <button
+                      className="h-8 w-8 bg-amber-500 rounded-full flex items-center justify-center"
+                      title="View"
+                      aria-label="View todo"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M12 4c4.29 0 7.863 2.429 10.665 7.154l.22 .379l.045 .1l.03 .083l.014 .055l.014 .082l.011 .1v.11l-.014 .111a.992 .992 0 0 1 -.026 .11l-.039 .108l-.036 .075l-.016 .03c-2.764 4.836 -6.3 7.38 -10.555 7.499l-.313 .004c-4.396 0 -8.037 -2.549 -10.868 -7.504a1 1 0 0 1 0 -.992c2.831 -4.955 6.472 -7.504 10.868 -7.504zm0 5a3 3 0 1 0 0 6a3 3 0 0 0 0 -6z" />
+                      </svg>
+                    </button>
+                  </nav>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </section>
     </section>
   );

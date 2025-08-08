@@ -6,7 +6,6 @@ const todoSlice = createSlice({
   name: "todos",
   initialState,
   reducers: {
-    // Add todo.
     addTodo: (state, action) => {
       state.push({
         id: Date.now(),
@@ -15,7 +14,6 @@ const todoSlice = createSlice({
       });
     },
 
-    // Change Status.
     changeStatus: (state, action) => {
       const done = state.find((item) => item.id === action.payload);
       if (done) {
@@ -25,5 +23,5 @@ const todoSlice = createSlice({
   },
 });
 
-export const { addTodo } = todoSlice.actions;
+export const { addTodo, changeStatus } = todoSlice.actions;
 export default todoSlice.reducer;
