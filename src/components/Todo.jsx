@@ -48,6 +48,7 @@ const Todo = () => {
     };
   }, [title, dispatch]);
 
+  // Main UI.
   return (
     <section
       className={`w-80 sm:w-sm md:w-md lg:w-lg rounded-xl ${
