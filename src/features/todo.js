@@ -1,10 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const initialState = [];
+const savedTodo = JSON.parse(localStorage.getItem("redux-todo")) || [];
 
 const todoSlice = createSlice({
   name: "todos",
-  initialState,
+  initialState: savedTodo,
   reducers: {
     addTodo: (state, action) => {
       state.push({
@@ -16,12 +16,11 @@ const todoSlice = createSlice({
 
     updateTodo: (state, action) => {
       const { id, title } = action.payload;
-      const changeTitle = state.find((t) => t.id === id);
-      if (changeTitle) {
-        changeTitle.title = title;
+      const todo = state.find((t) => t.id === id);
+      if (todo) {
+        todo.title = title;
       }
     },
-
     deleteTodo: (state, action) => {
       return state.filter((todo) => todo.id !== action.payload);
     },

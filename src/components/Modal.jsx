@@ -1,12 +1,12 @@
 import { useContext, useEffect } from "react";
 import { AppContext } from "../contexts/AppContext";
 
-const Modal = () => {
+const Modal = ({ todo }) => {
   const { light, toggleView } = useContext(AppContext);
 
   return (
     <section
-      className={`h-50 w-75 md:h-50 md:w-100 rounded-lg flex flex-col gap-5 ${
+      className={`h-auto w-75 md:h-50 md:w-100 rounded-lg flex flex-col gap-5 overflow-auto scrollbar-thin ${
         light
           ? "bg-neutral-700 shadow-amber-700 shadow-md"
           : "bg-white shadow-xl"
@@ -18,12 +18,19 @@ const Modal = () => {
         <section className="flex items-center justify-between w-full">
           <p
             className={`font-bold ${
-              light ? "text-neutral-400" : "text-neutral-700"
+              light ? "text-neutral-300" : "text-neutral-700"
             } text-lg md:text-2xl transition-all duration-300 ease-in-out`}
           >
             View Todo
           </p>
-          <button onClick={toggleView} className={`flex justify-center items-center p-3 rounded-full ${light ? "bg-amber-400 hover:bg-amber-500 text-neutral-600" : "bg-blue-200 hover:bg-blue-400"} shadow-md cursor-pointer  transition-all duration-200 ease-in-out`}>
+          <button
+            onClick={toggleView}
+            className={`flex justify-center items-center p-3 rounded-full ${
+              light
+                ? "bg-amber-400 hover:bg-amber-500 text-neutral-600"
+                : "bg-blue-200 hover:bg-blue-400"
+            } shadow-md cursor-pointer  transition-all duration-200 ease-in-out`}
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
@@ -41,7 +48,22 @@ const Modal = () => {
             </svg>
           </button>
         </section>
-        <hr className={`${light ? "border-white opacity-20" : "opacity-20"} border mt-5 w-full`} />
+        <hr
+          className={`${
+            light ? "border-white opacity-20" : "opacity-20"
+          } border mt-5 w-full`}
+        />
+
+        {/* Text Section */}
+        <section className="mt-4">
+          {todo ? (
+            <p className={`${light ? "text-white" : "text-black"}`}>
+              {todo.title}
+            </p>
+          ) : (
+            <p className="text-gray-400">No todo selected</p>
+          )}
+        </section>
       </div>
     </section>
   );

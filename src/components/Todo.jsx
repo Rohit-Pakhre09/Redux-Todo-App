@@ -11,9 +11,18 @@ import Modal from "./Modal";
 
 const Todo = () => {
   const [title, setTitle] = useState("");
+  const [editingId, setEditingId] = useState(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [modalInfo, setModalInfo] = useState(null);
+
   const { light, toggleTheme, view, toggleView } = useContext(AppContext);
   const todos = useSelector((state) => state.todo);
   const dispatch = useDispatch();
+
+  // Persiting Todo.
+  useEffect(() => {
+    localStorage.setItem("redux-todo", JSON.stringify(todos));
+  }, [todos]);
 
   // Add Todo.
   const handleAdd = () => {
@@ -159,106 +168,147 @@ const Todo = () => {
         ) : (
           <section className="max-h-[580px] overflow-y-auto overflow-x-hidden mt-4 rounded-md scrollbar-thin pr-1">
             <ul className="space-y-4 list-none m-0 p-0">
-              {todos.map((todo) => (
-                <li
-                  key={todo.id}
-                  className={`p-4 flex items-center gap-5 rounded-md transition-all duration-200 ease-in-out ${
-                    light
-                      ? "bg-neutral-600 text-white shadow-neutral-600 shadow-sm"
-                      : "bg-white shadow-md"
-                  } overflow-hidden text-ellipsis h-20`}
-                >
-                  {/* Checkbox */}
-                  <input
-                    type="checkbox"
-                    checked={todo.status}
-                    onChange={() => dispatch(changeStatus(todo.id))}
-                    className={`appearance-none w-5 h-5 border-2 border-gray-300 rounded-full
-  transition-all duration-200 cursor-pointer focus:outline-none
-  ${
-    !light
-      ? `checked:bg-blue-500 checked:border-blue-500 focus:ring-2 focus:ring-blue-500`
-      : `checked:bg-amber-500 checked:border-amber-500 focus:ring-2 focus:ring-amber-500`
-  }`}
-                  />
-                  {/* Todo Text */}
-                  <p className="flex-1 truncate">{todo.title}</p>
-
-                  {/* Buttons */}
-                  <section className="flex items-center gap-2">
-                    {/* View Btn */}
-                    <button
-                      className="h-8 w-8 bg-amber-500 rounded-full flex items-center justify-center cursor-pointer transform transition-transform duration-200 ease-in-out hover:scale-110 hover:bg-amber-600"
-                      title="View"
-                      onClick={toggleView}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <path d="M12 4c4.29 0 7.863 2.429 10.665 7.154l.22 .379l.045 .1l.03 .083l.014 .055l.014 .082l.011 .1v.11l-.014 .111a.992 .992 0 0 1 -.026 .11l-.039 .108l-.036 .075l-.016 .03c-2.764 4.836 -6.3 7.38 -10.555 7.499l-.313 .004c-4.396 0 -8.037 -2.549 -10.868 -7.504a1 1 0 0 1 0 -.992c2.831 -4.955 6.472 -7.504 10.868 -7.504zm0 5a3 3 0 1 0 0 6a3 3 0 0 0 0 -6z" />
-                      </svg>
-                    </button>
-
-                    {/* Edit Btn */}
-                    <button
-                      className="h-8 w-8 bg-emerald-500 rounded-full flex items-center justify-center cursor-pointer transform transition-transform duration-200 ease-in-out hover:scale-110 hover:bg-emerald-600"
-                      title="Edit"
-                      onClick={() =>
-                        dispatch(updateTodo({ id: todo.id, title: todo.title }))
-                      }
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
-                        <path d="M13.5 6.5l4 4" />
-                      </svg>
-                    </button>
-
-                    {/* Delete Btn */}
-                    <button
-                      className="h-8 w-8 bg-red-500 rounded-full flex items-center justify-center cursor-pointer transform transition-transform duration-200 ease-in-out hover:scale-110 hover:bg-red-600"
-                      title="Delete"
-                      onClick={() => {
-                        dispatch(deleteTodo(todo.id));
+              {[...todos]
+                .sort((a, b) => a.status - b.status)
+                .map((todo) => (
+                  <li
+                    key={todo.id}
+                    className={`p-4 flex items-center gap-5 rounded-md transition-all duration-500 ease-in-out ${
+                      light
+                        ? "bg-neutral-600 text-white shadow-neutral-600 shadow-sm"
+                        : "bg-white shadow-md"
+                    } overflow-hidden text-ellipsis h-20
+                ${todo.status ? "opacity-70" : "opacity-100"} 
+                ${editingId === todo.id ? "pointer-events-none" : ""}
+              `}
+                  >
+                    {/* Checkbox */}
+                    <input
+                      type="checkbox"
+                      checked={todo.status}
+                      onChange={() => {
+                        dispatch(changeStatus(todo.id));
                       }}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+                      className={`appearance-none w-5 h-5 border-2 border-gray-300 rounded-full
+                  transition-all duration-200 cursor-pointer focus:outline-none
+                  ${
+                    !light
+                      ? `checked:bg-blue-500 checked:border-blue-500 focus:ring-2 focus:ring-blue-500`
+                      : `checked:bg-amber-500 checked:border-amber-500 focus:ring-2 focus:ring-amber-500`
+                  }`}
+                    />
+
+                    {/* Todo Text */}
+                    {editingId === todo.id ? (
+                      <input
+                        type="text"
+                        value={editTitle}
+                        placeholder="Press enter when done."
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && editTitle.trim() !== "") {
+                            dispatch(
+                              updateTodo({ id: todo.id, title: editTitle })
+                            );
+                            setEditingId(null);
+                          }
+                        }}
+                        className={`flex-1 border px-2 py-1 rounded text-black w-15 placeholder:text-sm ${
+                          light
+                            ? "focus:ring-2 focus:ring-amber-400 outline-0 text-white"
+                            : "focus:ring-2 focus:ring-blue-400 outline-0"
+                        } ${
+                          editingId === todo.id ? "pointer-events-auto" : ""
+                        }`}
+                        autoFocus
+                      />
+                    ) : (
+                      <p
+                        className={`flex-1 truncate transition-all duration-500 ${
+                          todo.status ? "line-through text-gray-400" : ""
+                        }`}
                       >
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <path d="M4 7h16" />
-                        <path d="M10 11v6" />
-                        <path d="M14 11v6" />
-                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
-                        <path d="M9 7V4a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
-                      </svg>
-                    </button>
-                  </section>
-                </li>
-              ))}
+                        {todo.title}
+                      </p>
+                    )}
+
+                    {/* Buttons */}
+                    <section className="flex items-center gap-2">
+                      {/* View Btn */}
+                      <button
+                        className="h-6 w-6 md:h-8 md:w-8 bg-amber-500 rounded-full flex items-center justify-center cursor-pointer transform transition-transform duration-200 ease-in-out hover:scale-110 hover:bg-amber-600"
+                        title="View"
+                        onClick={() => {
+                          setModalInfo(todo);
+                          toggleView();
+                        }}
+                      >
+                        {/* Eye Icon */}
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-[17px] h-[17px] md:w-[20px] md:h-[20px]"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                          <path d="M12 4c4.29 0 7.863 2.429 10.665 7.154l.22 .379l.045 .1l.03 .083l.014 .055l.014 .082l.011 .1v.11l-.014 .111a.992 .992 0 0 1 -.026 .11l-.039 .108l-.036 .075l-.016 .03c-2.764 4.836 -6.3 7.38 -10.555 7.499l-.313 .004c-4.396 0 -8.037 -2.549 -10.868 -7.504a1 1 0 0 1 0 -.992c2.831 -4.955 6.472 -7.504 10.868 -7.504zm0 5a3 3 0 1 0 0 6a3 3 0 0 0 0 -6z" />
+                        </svg>
+                      </button>
+
+                      {/* Edit Btn */}
+                      <button
+                        className="h-6 w-6 md:h-8 md:w-8 bg-emerald-500 rounded-full flex items-center justify-center cursor-pointer transform transition-transform duration-200 ease-in-out hover:scale-110 hover:bg-emerald-600"
+                        title="Edit"
+                        onClick={() => {
+                          setEditingId(todo.id);
+                          setEditTitle(todo.title);
+                        }}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-[17px] h-[17px] md:w-[20px] md:h-[20px]"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                          <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+                          <path d="M13.5 6.5l4 4" />
+                        </svg>
+                      </button>
+
+                      {/* Delete Btn */}
+                      <button
+                        className="h-6 w-6 md:h-8 md:w-8 bg-red-500 rounded-full flex items-center justify-center cursor-pointer transform transition-transform duration-200 ease-in-out hover:scale-110 hover:bg-red-600"
+                        title="Delete"
+                        onClick={() => {
+                          dispatch(deleteTodo(todo.id));
+                        }}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-[17px] h-[17px] md:w-[20px] md:h-[20px]"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                          <path d="M4 7h16" />
+                          <path d="M10 11v6" />
+                          <path d="M14 11v6" />
+                          <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
+                          <path d="M9 7V4a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
+                        </svg>
+                      </button>
+                    </section>
+                  </li>
+                ))}
             </ul>
           </section>
         )}
@@ -269,7 +319,7 @@ const Todo = () => {
             view ? "block visible" : "hidden invisible"
           }`}
         >
-          <Modal />
+          <Modal todo={modalInfo} />
         </section>
       </section>
     </section>
