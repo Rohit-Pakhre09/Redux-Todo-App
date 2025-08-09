@@ -1,11 +1,17 @@
 import { useContext, useEffect, useState } from "react";
-import { ThemeContext } from "../contexts/themeContext";
+import { AppContext } from "../contexts/AppContext";
 import { useDispatch, useSelector } from "react-redux";
-import { addTodo, changeStatus } from "../features/todo";
+import {
+  addTodo,
+  changeStatus,
+  deleteTodo,
+  updateTodo,
+} from "../features/todo";
+import Modal from "./Modal";
 
 const Todo = () => {
   const [title, setTitle] = useState("");
-  const { light, toggleTheme } = useContext(ThemeContext);
+  const { light, toggleTheme, view, toggleView } = useContext(AppContext);
   const todos = useSelector((state) => state.todo);
   const dispatch = useDispatch();
 
@@ -55,7 +61,8 @@ const Todo = () => {
             onClick={toggleTheme}
             className={`p-2 flex items-center justify-center ${
               light ? "bg-amber-500 shadow-lg" : "bg-white shadow-lg"
-            } rounded-full cursor-pointer transition-all duration-200 ease-in-out`}
+            } rounded-full cursor-pointer transition-all duration-200 ease-in-out hover:-rotate-12 hover:scale-110 hover:shadow-2xl`}
+            title={`${light ? "Light Mode" : "Dark Mode"}`}
           >
             {light ? (
               <svg
@@ -106,6 +113,7 @@ const Todo = () => {
 
       {/* Input Section */}
       <section className="flex items-center gap-5">
+        {/* Input */}
         <input
           type="text"
           value={title}
@@ -117,13 +125,16 @@ const Todo = () => {
           } flex-1 text-sm md:text-md transition-all duration-200 ease-in-out`}
           onChange={(e) => setTitle(e.target.value)}
         />
+
+        {/* Fire Button */}
         <button
           onClick={handleAdd}
           className={`flex items-center justify-center mt-5 h-12 w-12 rounded-full p-2 cursor-pointer font-bold text-[20px] ${
             light
-              ? "bg-amber-500 shadow-md text-neutral-700"
-              : "bg-white shadow-lg"
-          } transition-all duration-200 ease-in-out`}
+              ? "bg-amber-500 shadow-md text-neutral-700 hover:bg-amber-700 hover:text-white"
+              : "bg-white shadow-lg hover:bg-neutral-600 hover:text-white"
+          } transition-all duration-300 ease-in-out`}
+          title="Add Todo"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -146,7 +157,7 @@ const Todo = () => {
             No task available!
           </p>
         ) : (
-          <section className="max-h-[600px] overflow-y-auto overflow-x-hidden mt-4 rounded-md">
+          <section className="max-h-[580px] overflow-y-auto overflow-x-hidden mt-4 rounded-md scrollbar-thin pr-1">
             <ul className="space-y-4 list-none m-0 p-0">
               {todos.map((todo) => (
                 <li
@@ -155,30 +166,52 @@ const Todo = () => {
                     light
                       ? "bg-neutral-600 text-white shadow-neutral-600 shadow-sm"
                       : "bg-white shadow-md"
-                  }`}
+                  } overflow-hidden text-ellipsis h-20`}
                 >
                   {/* Checkbox */}
                   <input
                     type="checkbox"
-                    onClick={() => dispatch(changeStatus(todo.id))}
-                    aria-label={`Mark "${todo.title}" as completed`}
+                    checked={todo.status}
+                    onChange={() => dispatch(changeStatus(todo.id))}
+                    className={`appearance-none w-5 h-5 border-2 border-gray-300 rounded-full
+  transition-all duration-200 cursor-pointer focus:outline-none
+  ${
+    !light
+      ? `checked:bg-blue-500 checked:border-blue-500 focus:ring-2 focus:ring-blue-500`
+      : `checked:bg-amber-500 checked:border-amber-500 focus:ring-2 focus:ring-amber-500`
+  }`}
                   />
-
                   {/* Todo Text */}
-                  <span className="flex-1">{todo.title}</span>
+                  <p className="flex-1 truncate">{todo.title}</p>
 
-                  {/* Actions */}
-                  <nav
-                    className="flex items-center gap-2"
-                    aria-label="Todo actions"
-                  >
+                  {/* Buttons */}
+                  <section className="flex items-center gap-2">
+                    {/* View Btn */}
+                    <button
+                      className="h-8 w-8 bg-amber-500 rounded-full flex items-center justify-center cursor-pointer transform transition-transform duration-200 ease-in-out hover:scale-110 hover:bg-amber-600"
+                      title="View"
+                      onClick={toggleView}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M12 4c4.29 0 7.863 2.429 10.665 7.154l.22 .379l.045 .1l.03 .083l.014 .055l.014 .082l.011 .1v.11l-.014 .111a.992 .992 0 0 1 -.026 .11l-.039 .108l-.036 .075l-.016 .03c-2.764 4.836 -6.3 7.38 -10.555 7.499l-.313 .004c-4.396 0 -8.037 -2.549 -10.868 -7.504a1 1 0 0 1 0 -.992c2.831 -4.955 6.472 -7.504 10.868 -7.504zm0 5a3 3 0 1 0 0 6a3 3 0 0 0 0 -6z" />
+                      </svg>
+                    </button>
+
                     {/* Edit Btn */}
                     <button
-                      className="h-8 w-8 bg-emerald-500 rounded-full flex items-center justify-center"
+                      className="h-8 w-8 bg-emerald-500 rounded-full flex items-center justify-center cursor-pointer transform transition-transform duration-200 ease-in-out hover:scale-110 hover:bg-emerald-600"
                       title="Edit"
-                      aria-label="Edit todo"
+                      onClick={() =>
+                        dispatch(updateTodo({ id: todo.id, title: todo.title }))
+                      }
                     >
-                      {/* Edit Icon */}
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="20"
@@ -198,9 +231,11 @@ const Todo = () => {
 
                     {/* Delete Btn */}
                     <button
-                      className="h-8 w-8 bg-red-500 rounded-full flex items-center justify-center"
+                      className="h-8 w-8 bg-red-500 rounded-full flex items-center justify-center cursor-pointer transform transition-transform duration-200 ease-in-out hover:scale-110 hover:bg-red-600"
                       title="Delete"
-                      aria-label="Delete todo"
+                      onClick={() => {
+                        dispatch(deleteTodo(todo.id));
+                      }}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -221,30 +256,21 @@ const Todo = () => {
                         <path d="M9 7V4a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
                       </svg>
                     </button>
-
-                    {/* View Btn */}
-                    <button
-                      className="h-8 w-8 bg-amber-500 rounded-full flex items-center justify-center"
-                      title="View"
-                      aria-label="View todo"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <path d="M12 4c4.29 0 7.863 2.429 10.665 7.154l.22 .379l.045 .1l.03 .083l.014 .055l.014 .082l.011 .1v.11l-.014 .111a.992 .992 0 0 1 -.026 .11l-.039 .108l-.036 .075l-.016 .03c-2.764 4.836 -6.3 7.38 -10.555 7.499l-.313 .004c-4.396 0 -8.037 -2.549 -10.868 -7.504a1 1 0 0 1 0 -.992c2.831 -4.955 6.472 -7.504 10.868 -7.504zm0 5a3 3 0 1 0 0 6a3 3 0 0 0 0 -6z" />
-                      </svg>
-                    </button>
-                  </nav>
+                  </section>
                 </li>
               ))}
             </ul>
           </section>
         )}
+
+        {/* View Modal */}
+        <section
+          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 ${
+            view ? "block visible" : "hidden invisible"
+          }`}
+        >
+          <Modal />
+        </section>
       </section>
     </section>
   );
