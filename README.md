@@ -10,9 +10,17 @@ A sleek, professional **Todo App** built with **React**, **Redux Toolkit**, and 
 
 ---
 
-## 📸 Todo UI 
+## 📸 Todo UI
+
 ![Todo App Screenshot](./src/assets/1.png) <br><br>
 ![Todo App Screenshot](./src/assets/2.png)
+
+---
+
+## 📸 Todo UI Video
+
+![Todo App Screenshot](./src/assets/Redux%20-%20Todo%20App.gif)
+
 ---
 
 ## 🔧 Key Features
