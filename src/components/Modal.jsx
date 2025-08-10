@@ -6,7 +6,7 @@ const Modal = ({ todo }) => {
 
   return (
     <section
-      className={`h-auto w-75 md:h-50 md:w-100 rounded-lg flex flex-col gap-5 overflow-auto scrollbar-thin ${
+      className={`h-60 w-75 md:h-70 md:w-100 p-5 rounded-lg flex flex-col gap-5 ${
         light
           ? "bg-neutral-700 shadow-amber-700 shadow-md"
           : "bg-white shadow-xl"
@@ -55,9 +55,9 @@ const Modal = ({ todo }) => {
         />
 
         {/* Text Section */}
-        <section className="mt-4">
+        <section className="mt-4 overflow-auto scrollbar-thin h-28 md:h-38">
           {todo ? (
-            <p className={`${light ? "text-white" : "text-black"}`}>
+            <p className={`${light ? "text-white" : "text-black"} break-words whitespace-pre-wrap`}>
               {todo.title}
             </p>
           ) : (

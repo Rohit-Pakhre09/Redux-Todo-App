@@ -14,6 +14,7 @@ const Todo = () => {
   const [editingId, setEditingId] = useState(null);
   const [editTitle, setEditTitle] = useState("");
   const [modalInfo, setModalInfo] = useState(null);
+  const [done, setDone] = useState(false);
 
   const { light, toggleTheme, view, toggleView } = useContext(AppContext);
   const todos = useSelector((state) => state.todo);
@@ -200,41 +201,39 @@ const Todo = () => {
                     />
 
                     {/* Todo Text */}
-                    {editingId === todo.id ? (
-                      <input
-                        type="text"
-                        value={editTitle}
-                        placeholder="Press enter when done."
-                        onChange={(e) => setEditTitle(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && editTitle.trim() !== "") {
-                            dispatch(
-                              updateTodo({ id: todo.id, title: editTitle })
-                            );
-                            setEditingId(null);
-                          }
-                        }}
-                        className={`flex-1 border px-2 py-1 rounded text-black w-15 placeholder:text-sm ${
-                          light
-                            ? "focus:ring-2 focus:ring-amber-400 outline-0 text-white"
-                            : "focus:ring-2 focus:ring-blue-400 outline-0"
-                        } ${
-                          editingId === todo.id ? "pointer-events-auto" : ""
-                        }`}
-                        autoFocus
-                      />
-                    ) : (
-                      <p
-                        className={`flex-1 truncate transition-all duration-500 ${
-                          todo.status ? "line-through text-gray-400" : ""
-                        }`}
-                      >
-                        {todo.title}
-                      </p>
-                    )}
+                    <div
+                      className={
+                        editingId === todo.id
+                          ? "pointer-events-none flex-1"
+                          : "flex-1"
+                      }
+                    >
+                      {editingId === todo.id ? (
+                        <input
+                          type="text"
+                          value={editTitle}
+                          placeholder="Type and click tick to save"
+                          onChange={(e) => setEditTitle(e.target.value)}
+                          className={`border px-2 py-1 rounded text-black w-23 sm:w-40 md:w-50 lg:w-65 placeholder:text-sm ${
+                            light
+                              ? "focus:ring-2 focus:ring-amber-400 outline-0 text-white"
+                              : "focus:ring-2 focus:ring-blue-400 outline-0"
+                          } pointer-events-auto`}
+                          autoFocus
+                        />
+                      ) : (
+                        <p
+                          className={`truncate max-w-[65px] sm-max-w-[50px] md:max-w-[150px] lg:max-w-[200px]  transition-all duration-500 ${
+                            todo.status ? "line-through text-gray-400" : ""
+                          }`}
+                        >
+                          {todo.title}
+                        </p>
+                      )}
+                    </div>
 
                     {/* Buttons */}
-                    <section className="flex items-center gap-2">
+                    <section className="flex items-center gap-2 pointer-events-auto">
                       {/* View Btn */}
                       <button
                         className="h-6 w-6 md:h-8 md:w-8 bg-amber-500 rounded-full flex items-center justify-center cursor-pointer transform transition-transform duration-200 ease-in-out hover:scale-110 hover:bg-amber-600"
@@ -256,29 +255,58 @@ const Todo = () => {
                         </svg>
                       </button>
 
-                      {/* Edit Btn */}
+                      {/* Edit / Save Btn */}
                       <button
                         className="h-6 w-6 md:h-8 md:w-8 bg-emerald-500 rounded-full flex items-center justify-center cursor-pointer transform transition-transform duration-200 ease-in-out hover:scale-110 hover:bg-emerald-600"
-                        title="Edit"
+                        title={editingId === todo.id ? "Save" : "Edit"}
                         onClick={() => {
-                          setEditingId(todo.id);
-                          setEditTitle(todo.title);
+                          if (editingId === todo.id) {
+                            // Save
+                            if (editTitle.trim() !== "") {
+                              dispatch(
+                                updateTodo({ id: todo.id, title: editTitle })
+                              );
+                            }
+                            setEditingId(null);
+                          } else {
+                            // Enter Edit Mode
+                            setEditingId(todo.id);
+                            setEditTitle(todo.title);
+                          }
                         }}
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-[17px] h-[17px] md:w-[20px] md:h-[20px]"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                          <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
-                          <path d="M13.5 6.5l4 4" />
-                        </svg>
+                        {editingId === todo.id ? (
+                          // Tick Icon
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="w-[17px] h-[17px] md:w-[20px] md:h-[20px]"
+                          >
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <path d="M5 12l5 5l10 -10" />
+                          </svg>
+                        ) : (
+                          // Edit Icon
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-[17px] h-[17px] md:w-[20px] md:h-[20px]"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+                            <path d="M13.5 6.5l4 4" />
+                          </svg>
+                        )}
                       </button>
 
                       {/* Delete Btn */}
